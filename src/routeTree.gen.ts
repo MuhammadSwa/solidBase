@@ -14,8 +14,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedPatientsRouteImport } from './routes/_authenticated/patients'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedTodosIndexRouteImport } from './routes/_authenticated/todos/index'
+import { Route as AuthenticatedPatientsIndexRouteImport } from './routes/_authenticated/patients/index'
+import { Route as AuthenticatedTodosNewRouteImport } from './routes/_authenticated/todos/new'
+import { Route as AuthenticatedPatientsNewRouteImport } from './routes/_authenticated/patients/new'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -41,16 +44,33 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedPatientsRoute = AuthenticatedPatientsRouteImport.update({
-  id: '/patients',
-  path: '/patients',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTodosIndexRoute = AuthenticatedTodosIndexRouteImport.update({
+  id: '/todos/',
+  path: '/todos/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPatientsIndexRoute =
+  AuthenticatedPatientsIndexRouteImport.update({
+    id: '/patients/',
+    path: '/patients/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedTodosNewRoute = AuthenticatedTodosNewRouteImport.update({
+  id: '/todos/new',
+  path: '/todos/new',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPatientsNewRoute =
+  AuthenticatedPatientsNewRouteImport.update({
+    id: '/patients/new',
+    path: '/patients/new',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -58,7 +78,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/patients': typeof AuthenticatedPatientsRoute
+  '/patients/new': typeof AuthenticatedPatientsNewRoute
+  '/todos/new': typeof AuthenticatedTodosNewRoute
+  '/patients': typeof AuthenticatedPatientsIndexRoute
+  '/todos': typeof AuthenticatedTodosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -66,7 +89,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/patients': typeof AuthenticatedPatientsRoute
+  '/patients/new': typeof AuthenticatedPatientsNewRoute
+  '/todos/new': typeof AuthenticatedTodosNewRoute
+  '/patients': typeof AuthenticatedPatientsIndexRoute
+  '/todos': typeof AuthenticatedTodosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,13 +102,34 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/patients': typeof AuthenticatedPatientsRoute
+  '/_authenticated/patients/new': typeof AuthenticatedPatientsNewRoute
+  '/_authenticated/todos/new': typeof AuthenticatedTodosNewRoute
+  '/_authenticated/patients/': typeof AuthenticatedPatientsIndexRoute
+  '/_authenticated/todos/': typeof AuthenticatedTodosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/login' | '/signup' | '/dashboard' | '/patients'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/patients/new'
+    | '/todos/new'
+    | '/patients'
+    | '/todos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login' | '/signup' | '/dashboard' | '/patients'
+  to:
+    | '/'
+    | '/about'
+    | '/login'
+    | '/signup'
+    | '/dashboard'
+    | '/patients/new'
+    | '/todos/new'
+    | '/patients'
+    | '/todos'
   id:
     | '__root__'
     | '/'
@@ -91,7 +138,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authenticated/dashboard'
-    | '/_authenticated/patients'
+    | '/_authenticated/patients/new'
+    | '/_authenticated/todos/new'
+    | '/_authenticated/patients/'
+    | '/_authenticated/todos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -139,13 +189,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/patients': {
-      id: '/_authenticated/patients'
-      path: '/patients'
-      fullPath: '/patients'
-      preLoaderRoute: typeof AuthenticatedPatientsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -153,17 +196,51 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/todos/': {
+      id: '/_authenticated/todos/'
+      path: '/todos'
+      fullPath: '/todos'
+      preLoaderRoute: typeof AuthenticatedTodosIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/patients/': {
+      id: '/_authenticated/patients/'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof AuthenticatedPatientsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/todos/new': {
+      id: '/_authenticated/todos/new'
+      path: '/todos/new'
+      fullPath: '/todos/new'
+      preLoaderRoute: typeof AuthenticatedTodosNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/patients/new': {
+      id: '/_authenticated/patients/new'
+      path: '/patients/new'
+      fullPath: '/patients/new'
+      preLoaderRoute: typeof AuthenticatedPatientsNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRoute
+  AuthenticatedPatientsNewRoute: typeof AuthenticatedPatientsNewRoute
+  AuthenticatedTodosNewRoute: typeof AuthenticatedTodosNewRoute
+  AuthenticatedPatientsIndexRoute: typeof AuthenticatedPatientsIndexRoute
+  AuthenticatedTodosIndexRoute: typeof AuthenticatedTodosIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedPatientsRoute: AuthenticatedPatientsRoute,
+  AuthenticatedPatientsNewRoute: AuthenticatedPatientsNewRoute,
+  AuthenticatedTodosNewRoute: AuthenticatedTodosNewRoute,
+  AuthenticatedPatientsIndexRoute: AuthenticatedPatientsIndexRoute,
+  AuthenticatedTodosIndexRoute: AuthenticatedTodosIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

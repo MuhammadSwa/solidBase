@@ -17,8 +17,8 @@ import {
   useRealtimeCollection,
   useRealtimeRecord,
   useRealtimeSubscription,
-} from '../lib/queries'
-import { pb } from '../lib/pocketbase'
+} from '@/lib/queries'
+import { pb } from '@/lib/pocketbase'
 
 // =============================================================================
 // Example 1: Basic Realtime List

@@ -1,5 +1,5 @@
 import { redirect } from "@tanstack/solid-router"
-import type { RouterContext } from "../index"
+import type { RouterContext } from "@/index"
 
 /**
  * Route guard for pages that require the user to be logged OUT

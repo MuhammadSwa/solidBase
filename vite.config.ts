@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
+import path from 'path'
 
 export default defineConfig({
   plugins: [
@@ -13,4 +14,9 @@ export default defineConfig({
     solid(),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
 })

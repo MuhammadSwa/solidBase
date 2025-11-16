@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/solid-router"
 import { createSignal, Show } from "solid-js"
-import { useAuth } from "../lib/auth-context"
-import { toast } from "../lib/toast"
-import { requireGuest } from "../lib/route-guards"
+import { useAuth } from "@/lib/auth-context"
+import { toast } from "@/lib/toast"
+import { requireGuest } from "@/lib/route-guards"
 
 export const Route = createFileRoute("/login")({
   beforeLoad: ({ context }) => requireGuest(context),

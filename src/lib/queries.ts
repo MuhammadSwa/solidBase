@@ -1,12 +1,156 @@
 /**
  * Composable Query Hooks for PocketBase + TanStack Query
  * 
- * These hooks provide a simple, reusable pattern for data fetching.
- * They handle loading states, errors, and caching automatically.
+ * These hooks provide a simple, reusable pattern for data fetching with:
+ * - Automatic loading states, errors, and caching
+ * - Optimistic updates for instant UI feedback
+ * - Automatic rollback on errors
+ * - Server sync on completion
+ * 
+ * OPTIMISTIC UPDATES:
+ * All mutations (create, update, delete) use optimistic updates:
+ * 1. UI updates immediately (no waiting for server)
+ * 2. If server fails, changes are automatically rolled back
+ * 3. On success, data is synced with server response
+ * 
+ * This eliminates flickering and provides a snappy, responsive UX.
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/solid-query'
+import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/solid-query'
 import * as pb from './pocketbase'
+
+// =============================================================================
+// OPTIMISTIC UPDATE UTILITIES - Reusable optimistic update logic
+// =============================================================================
+
+type RecordWithId = { id: string; [key: string]: any }
+
+/**
+ * Optimistic create - adds new record to cache immediately
+ */
+async function optimisticCreate<T extends RecordWithId>(
+  queryClient: QueryClient,
+  collection: string,
+  newRecord: Partial<T>
+) {
+  await queryClient.cancelQueries({ queryKey: [collection, 'list'] })
+  
+  const previousData = queryClient.getQueriesData({ queryKey: [collection, 'list'] })
+  
+  // Optimistically add to all list queries
+  queryClient.setQueriesData({ queryKey: [collection, 'list'] }, (old: any) => {
+    if (!old?.items) return old
+    
+    // Create temporary record with optimistic ID
+    const tempRecord = {
+      id: `temp-${Date.now()}`,
+      ...newRecord,
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+    } as unknown as T
+    
+    return {
+      ...old,
+      items: [tempRecord, ...old.items],
+      totalItems: old.totalItems + 1,
+    }
+  })
+  
+  return { previousData }
+}
+
+/**
+ * Optimistic update - updates existing record in cache immediately
+ */
+async function optimisticUpdate<T extends RecordWithId>(
+  queryClient: QueryClient,
+  collection: string,
+  id: string,
+  updates: Partial<T>
+) {
+  await queryClient.cancelQueries({ queryKey: [collection] })
+  
+  const previousListData = queryClient.getQueriesData({ queryKey: [collection, 'list'] })
+  const previousDetailData = queryClient.getQueryData([collection, 'detail', id])
+  
+  // Update in all list queries
+  queryClient.setQueriesData({ queryKey: [collection, 'list'] }, (old: any) => {
+    if (!old?.items) return old
+    return {
+      ...old,
+      items: old.items.map((item: T) =>
+        item.id === id ? { ...item, ...updates, updated: new Date().toISOString() } : item
+      ),
+    }
+  })
+  
+  // Update detail query if it exists
+  if (previousDetailData) {
+    queryClient.setQueryData([collection, 'detail', id], (old: any) => ({
+      ...old,
+      ...updates,
+      updated: new Date().toISOString(),
+    }))
+  }
+  
+  return { previousListData, previousDetailData }
+}
+
+/**
+ * Optimistic delete - removes record from cache immediately
+ */
+async function optimisticDelete(
+  queryClient: QueryClient,
+  collection: string,
+  id: string
+) {
+  await queryClient.cancelQueries({ queryKey: [collection, 'list'] })
+  
+  const previousData = queryClient.getQueriesData({ queryKey: [collection, 'list'] })
+  
+  // Remove from all list queries
+  queryClient.setQueriesData({ queryKey: [collection, 'list'] }, (old: any) => {
+    if (!old?.items) return old
+    return {
+      ...old,
+      items: old.items.filter((item: RecordWithId) => item.id !== id),
+      totalItems: Math.max(0, old.totalItems - 1),
+    }
+  })
+  
+  // Remove detail query
+  queryClient.removeQueries({ queryKey: [collection, 'detail', id] })
+  
+  return { previousData }
+}
+
+/**
+ * Rollback optimistic updates on error
+ */
+function rollbackOptimisticUpdate(
+  queryClient: QueryClient,
+  collection: string,
+  context: any
+) {
+  // Rollback list queries
+  if (context?.previousData) {
+    context.previousData.forEach(([queryKey, data]: [any, any]) => {
+      queryClient.setQueryData(queryKey, data)
+    })
+  }
+  
+  // Rollback list data
+  if (context?.previousListData) {
+    context.previousListData.forEach(([queryKey, data]: [any, any]) => {
+      queryClient.setQueryData(queryKey, data)
+    })
+  }
+  
+  // Rollback detail data
+  if (context?.previousDetailData && context?.id) {
+    queryClient.setQueryData([collection, 'detail', context.id], context.previousDetailData)
+  }
+}
 
 // =============================================================================
 // QUERY HOOKS - For fetching data
@@ -56,46 +200,58 @@ export function useRecord<T = any>(
 // =============================================================================
 
 /**
- * Create a new record in a collection
+ * Create a new record with optimistic updates
  * 
  * @example
  * const createPatient = useCreateRecord('patients')
  * createPatient.mutate({ name: 'John Doe' })
  */
-export function useCreateRecord<T = any>(collection: string) {
+export function useCreateRecord<T extends RecordWithId = RecordWithId>(collection: string) {
   const queryClient = useQueryClient()
 
   return useMutation(() => ({
     mutationFn: (data: any) => pb.create<T>(collection, data),
-    onSuccess: () => {
-      // Invalidate list queries to refetch
+    onMutate: async (data: any) => {
+      const context = await optimisticCreate<T>(queryClient, collection, data)
+      return context
+    },
+    onError: (_err, _vars, context: any) => {
+      rollbackOptimisticUpdate(queryClient, collection, context)
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [collection, 'list'] })
     },
   }))
 }
 
 /**
- * Update an existing record
+ * Update an existing record with optimistic updates
  * 
  * @example
  * const updatePatient = useUpdateRecord('patients')
  * updatePatient.mutate({ id: '123', name: 'Jane Doe' })
  */
-export function useUpdateRecord<T = any>(collection: string) {
+export function useUpdateRecord<T extends RecordWithId = RecordWithId>(collection: string) {
   const queryClient = useQueryClient()
 
   return useMutation(() => ({
-    mutationFn: ({ id, ...data }: { id: string;[key: string]: any }) =>
+    mutationFn: ({ id, ...data }: { id: string; [key: string]: any }) =>
       pb.update<T>(collection, id, data),
-    onSuccess: () => {
-      // Invalidate both list and detail queries
+    onMutate: async ({ id, ...data }: { id: string; [key: string]: any }) => {
+      const context = await optimisticUpdate<T>(queryClient, collection, id, data as Partial<T>)
+      return { ...context, id }
+    },
+    onError: (_err, _vars, context: any) => {
+      rollbackOptimisticUpdate(queryClient, collection, context)
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [collection] })
     },
   }))
 }
 
 /**
- * Delete a record
+ * Delete a record with optimistic updates
  * 
  * @example
  * const deletePatient = useDeleteRecord('patients')
@@ -106,23 +262,47 @@ export function useDeleteRecord(collection: string) {
 
   return useMutation(() => ({
     mutationFn: (id: string) => pb.deleteRecord(collection, id),
-    onSuccess: () => {
-      // Invalidate list queries to refetch
+    onMutate: async (id: string) => {
+      const context = await optimisticDelete(queryClient, collection, id)
+      return context
+    },
+    onError: (_err, _vars, context: any) => {
+      rollbackOptimisticUpdate(queryClient, collection, context)
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [collection, 'list'] })
     },
   }))
 }
 
+/**
+ * ✨ OPTIMISTIC UPDATE PATTERN - How it works:
+ * 
+ * ALL mutations follow the same reliable pattern:
+ * 
+ * 1. onMutate: Update cache immediately (optimistic)
+ *    - Cancel in-flight queries to avoid race conditions
+ *    - Snapshot current data for rollback
+ *    - Update cache with optimistic data
+ * 
+ * 2. onError: Rollback if mutation fails
+ *    - Restore cache to previous snapshot
+ *    - User sees original data again
+ * 
+ * 3. onSettled: Sync with server
+ *    - Invalidate queries to refetch real data
+ *    - Ensures cache matches server state
+ * 
+ * Result: Instant UI updates + automatic error recovery + server sync
+ */
+
+// =============================================================================
+// REALTIME INTEGRATION - Auto-sync PocketBase realtime with TanStack Query
 // =============================================================================
 // REALTIME INTEGRATION - Auto-sync PocketBase realtime with TanStack Query
 // =============================================================================
 
 import { onMount, onCleanup } from 'solid-js'
-
-/**
- * Base record type with id field
- */
-type RecordWithId = { id: string; [key: string]: any }
 
 /**
  * Realtime event from PocketBase subscription

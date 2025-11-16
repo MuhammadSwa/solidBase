@@ -33,6 +33,8 @@ function About() {
               <p class="text-gray-600">
                 An open-source backend in a single file. PocketBase gives you a realtime database,
                 built-in authentication, file storage, and an admin dashboard - all with zero configuration.
+                <strong class="text-green-600"> This template includes full realtime sync functionality 
+                - changes are automatically pushed to all connected clients!</strong>
               </p>
             </div>
 
@@ -76,6 +78,10 @@ function About() {
             <li class="flex items-start">
               <span class="text-green-500 mr-2">✓</span>
               <span>Tailwind CSS v4 for rapid UI development</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-500 mr-2">✓</span>
+              <span><strong>Realtime data sync</strong> - Live updates across all connected clients (try the Patients page!)</span>
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">✓</span>

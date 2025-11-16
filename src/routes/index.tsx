@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/solid-router"
-import { useAuth } from "../lib/auth-context"
+import { useAuth } from "@/lib/auth-context"
 import { Show } from "solid-js"
 
 export const Route = createFileRoute('/')({
@@ -39,7 +39,14 @@ function Index() {
               </div>
             </div>
             <div class="flex items-start space-x-3">
-              <div class="text-2xl">🛣️</div>
+              <div class="text-2xl">�</div>
+              <div>
+                <h3 class="font-medium">Real-time Sync</h3>
+                <p class="text-sm text-gray-600">Live updates across all connected clients</p>
+              </div>
+            </div>
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">�🛣️</div>
               <div>
                 <h3 class="font-medium">Type-safe Routing</h3>
                 <p class="text-sm text-gray-600">TanStack Router with file-based routes</p>
@@ -87,8 +94,9 @@ function Index() {
                 </Link>
                 <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
                   <p class="text-sm text-blue-800">
-                    <strong>Demo Tip:</strong> After signing in, you'll be brought right back here. 
-                    Then try the Patients page to see realtime sync in action!
+                    <strong>💡 Realtime Feature:</strong> After signing in, try the Patients page 
+                    to see realtime sync in action! Open it in multiple browser tabs and watch 
+                    changes sync instantly across all tabs.
                   </p>
                 </div>
               </div>
@@ -107,10 +115,16 @@ function Index() {
                 </Link>
                 <Link 
                   to="/patients" 
-                  class="inline-block px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                  class="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                 >
-                  View Patients (Example) →
+                  View Patients (Realtime) →
                 </Link>
+              </div>
+              <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded">
+                <p class="text-sm text-green-800">
+                  <strong>🔄 Try Realtime:</strong> Open the Patients page in multiple tabs 
+                  and watch changes sync instantly across all of them!
+                </p>
               </div>
             </div>
           </Show>

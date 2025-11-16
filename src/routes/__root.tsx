@@ -1,9 +1,9 @@
 import { createRootRouteWithContext, Link, Outlet, useNavigate, useLocation } from "@tanstack/solid-router"
 import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools"
-import type { RouterContext } from "../index"
+import type { RouterContext } from "@/index"
 import { Show } from "solid-js"
-import { useAuth } from "../lib/auth-context"
-import { ToastContainer, toast } from "../lib/toast"
+import { useAuth } from "@/lib/auth-context"
+import { ToastContainer, toast } from "@/lib/toast"
 
 const RootLayout = () => {
   const auth = useAuth()
