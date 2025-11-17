@@ -1,5 +1,6 @@
 import { createRootRouteWithContext, Link, Outlet, useNavigate, useLocation } from "@tanstack/solid-router"
 import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools"
+import { SolidQueryDevtools } from '@tanstack/solid-query-devtools'
 import type { RouterContext } from "@/index"
 import { Show } from "solid-js"
 import { useAuth } from "@/lib/auth-context"
@@ -76,6 +77,7 @@ const RootLayout = () => {
       </div>
       <Outlet />
       <TanStackRouterDevtools />
+      <SolidQueryDevtools />
     </>
   )
 }

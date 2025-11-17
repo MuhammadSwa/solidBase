@@ -81,13 +81,3 @@ const stats = () => {
 ```
 
 Stats update automatically as todos change!
-
-## Design Patterns
-
-This todo app uses the exact same patterns as the patients example:
-- Same query hooks
-- Same optimistic update utilities
-- Same realtime integration
-- Same error handling
-
-**The only difference is the data model!** This demonstrates how reusable and scalable the architecture is.
