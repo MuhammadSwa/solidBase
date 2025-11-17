@@ -94,9 +94,9 @@ function Index() {
                 </Link>
                 <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
                   <p class="text-sm text-blue-800">
-                    <strong>💡 Realtime Feature:</strong> After signing in, try the Patients page 
-                    to see realtime sync in action! Open it in multiple browser tabs and watch 
-                    changes sync instantly across all tabs.
+                    <strong>💡 Realtime Features:</strong> After signing in, explore the Patients 
+                    and Todo pages to see realtime sync in action! Open them in multiple browser 
+                    tabs and watch changes sync instantly across all tabs.
                   </p>
                 </div>
               </div>
@@ -117,13 +117,19 @@ function Index() {
                   to="/patients" 
                   class="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                 >
-                  View Patients (Realtime) →
+                  View Patients →
+                </Link>
+                <Link 
+                  to="/todos" 
+                  class="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                >
+                  View Todos →
                 </Link>
               </div>
               <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded">
                 <p class="text-sm text-green-800">
-                  <strong>🔄 Try Realtime:</strong> Open the Patients page in multiple tabs 
-                  and watch changes sync instantly across all of them!
+                  <strong>🔄 Try Realtime:</strong> Open the Patients or Todos page in multiple tabs 
+                  and watch changes sync instantly with optimistic updates!
                 </p>
               </div>
             </div>

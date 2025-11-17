@@ -9,31 +9,14 @@ This is a complete todo application showcasing the PocketBase + TanStack Query +
 - ✅ Toggle todo completion status instantly
 - ✅ Delete todos with confirmation
 - ✅ Real-time statistics (total, completed, active)
-- ✅ Beautiful, responsive UI with Tailwind CSS
 
 ### ⚡ Technical Features
 - **Optimistic Updates**: All mutations (create, update, delete) update the UI instantly
 - **Realtime Sync**: Changes sync across all open tabs/windows automatically
 - **Smart Caching**: TanStack Query handles all caching and refetching
 - **Error Handling**: Automatic rollback on failures
-- **Type Safety**: Full TypeScript support
-
-## Files Created
-
-### Routes
-- `/src/routes/_authenticated/todos/index.tsx` - Main todos list page
-- `/src/routes/_authenticated/todos/new.tsx` - Add new todo page
-
-### What Makes This Special
-
-1. **Zero Boilerplate**: Uses the reusable query hooks from `/src/lib/queries.ts`
-2. **Instant Feedback**: All actions feel instant due to optimistic updates
-3. **Reliable**: Automatic error recovery and server sync
-4. **Scalable**: Same pattern works for any PocketBase collection
 
 ## PocketBase Setup
-
-You mentioned you'll add the table. Here's what you need:
 
 ### Collection: `todos`
 

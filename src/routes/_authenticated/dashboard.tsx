@@ -33,15 +33,29 @@ function DashboardPage() {
               to="/patients"
               class="block p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition"
             >
-              <h3 class="font-semibold text-blue-900 mb-1">View Patients</h3>
-              <p class="text-sm text-blue-700">See all patients with realtime sync</p>
+              <h3 class="font-semibold text-blue-900 mb-1">📋 View Patients</h3>
+              <p class="text-sm text-blue-700">Manage patient records with realtime sync</p>
             </Link>
             <Link 
               to="/patients/new"
               class="block p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition"
             >
-              <h3 class="font-semibold text-green-900 mb-1">Add Patient</h3>
+              <h3 class="font-semibold text-green-900 mb-1">➕ Add Patient</h3>
               <p class="text-sm text-green-700">Create a new patient record</p>
+            </Link>
+            <Link 
+              to="/todos"
+              class="block p-4 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition"
+            >
+              <h3 class="font-semibold text-purple-900 mb-1">✅ View Todos</h3>
+              <p class="text-sm text-purple-700">Manage tasks with optimistic updates</p>
+            </Link>
+            <Link 
+              to="/todos/new"
+              class="block p-4 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition"
+            >
+              <h3 class="font-semibold text-indigo-900 mb-1">📝 Add Todo</h3>
+              <p class="text-sm text-indigo-700">Create a new todo item</p>
             </Link>
           </div>
           

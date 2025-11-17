@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/solid-router"
 import { For, Show, Suspense, createSignal } from "solid-js"
 import { useCollection, useDeleteRecord, useRealtimeCollection } from "@/lib/queries"
 import { type PatientsRecord } from "@/types/pocketbase-types"
+import { useConfirmationDialog } from "@/lib/confirmation-dialog"
 
 export const Route = createFileRoute("/_authenticated/patients/")({
   component: PatientsPage,
@@ -12,23 +13,33 @@ function PatientsPage() {
   const patients = useCollection<PatientsRecord>("patients", { sort: "-created" })
   const deletePatient = useDeleteRecord("patients")
   const [deletingId, setDeletingId] = createSignal<string | null>(null)
+  const confirmDialog = useConfirmationDialog()
 
   // 🔥 Enable realtime sync - data updates automatically across all users!
   useRealtimeCollection("patients")
 
   const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete patient "${name}"?`)) {
-      setDeletingId(id)
-      deletePatient.mutate(id, {
-        onSettled: () => setDeletingId(null)
-      })
-    }
+    confirmDialog.confirm({
+      title: "Delete Patient",
+      message: `Are you sure you want to delete patient "${name}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      isDangerous: true,
+      onConfirm: () => {
+        setDeletingId(id)
+        deletePatient.mutate(id, {
+          onSettled: () => setDeletingId(null)
+        })
+      },
+    })
   }
 
   return (
-    <div class="p-8">
-      <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-6">
+    <>
+      <confirmDialog.ConfirmationDialog />
+      <div class="p-8">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex justify-between items-center mb-6">
           <h1 class="text-3xl font-bold text-gray-900">Patients</h1>
           <Link
             to="/patients/new"
@@ -141,7 +152,8 @@ function PatientsPage() {
             </Show>
           </Suspense>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

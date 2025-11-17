@@ -1,14 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import { For, Show, Suspense, createSignal } from "solid-js"
 import { useCollection, useDeleteRecord, useUpdateRecord, useRealtimeCollection } from "@/lib/queries"
+import { type TodoRecord } from "@/types/pocketbase-types"
+import { useConfirmationDialog } from "@/lib/confirmation-dialog"
 
-type TodoRecord = {
-  id: string
-  title: string
-  completed: boolean
-  created: string
-  updated: string
-}
 
 export const Route = createFileRoute("/_authenticated/todos/")({
   component: TodosPage,
@@ -19,6 +14,7 @@ function TodosPage() {
   const deleteTodo = useDeleteRecord("todos")
   const updateTodo = useUpdateRecord<TodoRecord>("todos")
   const [deletingId, setDeletingId] = createSignal<string | null>(null)
+  const confirmDialog = useConfirmationDialog()
 
   useRealtimeCollection("todos")
 
@@ -30,12 +26,19 @@ function TodosPage() {
   }
 
   const handleDelete = (id: string, title: string) => {
-    if (confirm(`Delete "${title}"?`)) {
-      setDeletingId(id)
-      deleteTodo.mutate(id, {
-        onSettled: () => setDeletingId(null),
-      })
-    }
+    confirmDialog.confirm({
+      title: "Delete Todo",
+      message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      isDangerous: true,
+      onConfirm: () => {
+        setDeletingId(id)
+        deleteTodo.mutate(id, {
+          onSettled: () => setDeletingId(null),
+        })
+      },
+    })
   }
 
   const stats = () => {
@@ -48,9 +51,11 @@ function TodosPage() {
   }
 
   return (
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div class="max-w-3xl mx-auto">
-        <div class="text-center mb-8">
+    <>
+      <confirmDialog.ConfirmationDialog />
+      <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+        <div class="max-w-3xl mx-auto">
+          <div class="text-center mb-8">
           <h1 class="text-4xl font-bold text-gray-800 mb-2">✅ Todo List</h1>
           <p class="text-gray-600">
             Powered by PocketBase + TanStack Query + SolidJS
@@ -184,8 +189,9 @@ function TodosPage() {
             <li>🛡️ Automatic rollback - errors handled gracefully</li>
           </ul>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

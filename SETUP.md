@@ -64,10 +64,12 @@ Option B - Via API (after starting dev server):
 
 ### 7. Create Example Collections (Optional)
 
-For the patients example to work:
+For the todos example to work:
 
-1. Create a new "Base collection" named `patients`
-2. Add any fields you want (name, age, etc.)
+1. Create a new "Base collection" named `todos`
+2. Add fields
+  - `title` (text, required)
+  - `completed` (bool, default: false)
 3. Set appropriate API rules (e.g., `@request.auth.id != ""` for authenticated access)
 
 ### 8. Configure Environment

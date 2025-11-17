@@ -7,19 +7,17 @@
 ```
 src/
 ├── index.tsx                 # App entry point with providers
-├── index.css                 # Global styles and Tailwind imports
 ├── lib/
 │   ├── pocketbase.ts        # PocketBase client & helpers
 │   └── auth-context.tsx     # Authentication context provider
 ├── routes/
 │   ├── __root.tsx           # Root layout with navigation
 │   ├── index.tsx            # Home page
-│   ├── about.tsx            # About page
-│   ├── login.tsx            # Login page
+│   ├── _auth                # Authentication routes
 │   ├── _authenticated.tsx   # Protected routes layout
 │   └── _authenticated/
 │       ├── dashboard.tsx    # Example protected page
-│       └── patients.tsx     # Example with data fetching
+│       └── todos/           # Example with data fetching
 └── types/
     └── pocketbase-types.ts  # TypeScript types for collections
 ```
@@ -91,35 +89,65 @@ beforeLoad: ({ context, location }) => {
 
 ### 3. Data Fetching Pattern
 
-**TanStack Query + PocketBase Integration:**
+**Composable Query Hooks + TanStack Query + PocketBase:**
 
 ```tsx
-// Component
-const query = createQuery(() => ({
-  queryKey: ['patients'],
-  queryFn: async () => {
-    const result = await dataHelpers.getList('patients')
-    if (result.success) return result.data
-    throw new Error('Failed to fetch')
-  },
-  staleTime: 1000 * 60 * 5, // 5 min cache
-}))
+// Simple, reusable hooks for all data operations
+const todos = useCollection('todos', { sort: '-created' })
+const createTodo = useCreateRecord('todos')
+const updateTodo = useUpdateRecord('todos')
+const deleteTodo = useDeleteRecord('todos')
+
+// Enable realtime sync - updates automatically across all clients
+useRealtimeCollection('todos')
+
+// Usage - clean and declarative
+<Show when={todos.data}>
+  {(data) => (
+    <For each={data().items}>
+      {(todo) => <TodoItem todo={todo} />}
+    </For>
+  )}
+</Show>
 ```
 
-**Data Helpers Pattern:**
+**Available Composable Hooks:**
 
 ```tsx
-// All return { success: boolean, data?: any, error?: any }
-await dataHelpers.getList('collection')
-await dataHelpers.getOne('collection', id)
-await dataHelpers.create('collection', data)
-await dataHelpers.update('collection', id, data)
-await dataHelpers.delete('collection', id)
+// Queries (fetching data)
+useCollection('items', options)  // Fetch paginated list
+useRecord('items', () => id)     // Fetch single record by ID
+
+// Mutations (modifying data with optimistic updates)
+useCreateRecord('items')         // Create with instant UI feedback
+useUpdateRecord('items')         // Update with instant UI feedback
+useDeleteRecord('items')         // Delete with instant UI feedback
+
+// Realtime sync
+useRealtimeCollection('items')   // Auto-sync collection changes
+useRealtimeRecord('items', () => id)  // Auto-sync single record
+```
+
+**Optimistic Updates Pattern:**
+
+```tsx
+// All mutations update UI immediately, sync with server in background
+const deleteTodo = useDeleteRecord('todos')
+
+// Item disappears instantly, then confirms with server
+deleteTodo.mutate(id)
+
+// Automatic rollback if server fails - no extra code needed!
 ```
 
 **Benefits:**
-- Consistent error handling
-- Automatic caching and deduplication
+- **Zero boilerplate** - One-line data fetching
+- **Optimistic updates** - Instant UI feedback on all mutations
+- **Automatic caching** - Smart cache invalidation and deduplication
+- **Realtime sync** - Live updates across all connected clients
+- **Error recovery** - Automatic rollback on failures
+- **Type safety** - Full TypeScript support with generics
+- **Reusable** - Same hooks work for any PocketBase collection
 - Loading and error states
 - Optimistic updates support
 
@@ -161,16 +189,26 @@ beforeLoad: ({ context }) => {
 - Centralized auth logic
 - No prop drilling
 
-### 3. Why Data Helpers?
+### 3. Why Composable Query Hooks?
 
 ```tsx
-// Consistent error handling
-const result = await dataHelpers.getList('items')
-if (result.success) {
-  // Use result.data
-} else {
-  // Handle result.error
-}
+// Clean, declarative data fetching
+const todos = useCollection('todos', { sort: '-created' })
+const deleteTodo = useDeleteRecord('todos')
+
+// One line enables realtime sync
+useRealtimeCollection('todos')
+```
+
+**Advantages:**
+- **DRY principle** - Reusable across all collections
+- **Optimistic updates** - Built-in, no configuration needed
+- **Type safety** - Generic types for compile-time safety
+- **Scalable** - Add new collections without new code
+- **Testable** - Easy to mock and test
+- **Maintainable** - Single source of truth for data logic
+
+## State Management Strategy
 ```
 
 **Advantages:**
@@ -211,12 +249,19 @@ if (result.success) {
 
 ```tsx
 export const Route = createFileRoute("/_authenticated/my-route")({
-  loader: async ({ context }) => {
-    // Fetch data - user is guaranteed authenticated
-    return await dataHelpers.getList('items')
-  },
   component: MyComponent
 })
+
+function MyComponent() {
+  // Use composable hooks - data fetching is handled automatically
+  const items = useCollection('items', { sort: '-created' })
+  
+  return (
+    <Show when={items.data}>
+      {(data) => <For each={data().items}>{...}</For>}
+    </Show>
+  )
+}
 ```
 
 3. Route is automatically:
@@ -231,32 +276,64 @@ export const Route = createFileRoute("/_authenticated/my-route")({
 2. Add type to `src/types/pocketbase-types.ts`:
 
 ```tsx
-export interface MyCollectionRecord extends BaseRecord {
+export interface MyCollectionRecord {
+  id: string
   title: string
   content: string
+  created: string
+  updated: string
 }
 ```
 
-3. Use with data helpers:
+3. Use with composable hooks:
 
 ```tsx
-const result = await dataHelpers.getList<MyCollectionRecord>('my_collection')
+// In your component
+const items = useCollection<MyCollectionRecord>('my_collection')
+const createItem = useCreateRecord<MyCollectionRecord>('my_collection')
+const updateItem = useUpdateRecord<MyCollectionRecord>('my_collection')
+const deleteItem = useDeleteRecord('my_collection')
+
+// Enable realtime sync
+useRealtimeCollection('my_collection')
+
+// That's it! Full CRUD with optimistic updates and realtime sync
 ```
 
 ### Adding Real-time Subscriptions
 
+Realtime sync is built into the composable hooks:
+
+```tsx
+// Automatic realtime sync for a collection
+useRealtimeCollection('items')
+
+// Automatic realtime sync for a specific record
+useRealtimeRecord('items', () => id)
+
+// Changes automatically update TanStack Query cache
+// No manual subscription management needed!
+```
+
+**Manual subscriptions (if needed):**
+
 ```tsx
 // In a component
 onMount(() => {
-  pb.collection('items').subscribe('*', (e) => {
+  const unsubscribe = pb.collection('items').subscribe('*', (e) => {
     console.log(e.action, e.record)
-    // Update query cache
-    queryClient.invalidateQueries(['items'])
+    // Update query cache manually
+    queryClient.invalidateQueries({ queryKey: ['items', 'list'] })
+  })
+  
+  // Cleanup on unmount
+  onCleanup(() => {
+    unsubscribe.then((fn) => fn())
   })
 })
+```
 
-onCleanup(() => {
-  pb.collection('items').unsubscribe()
+## Performance Considerations
 })
 ```
 
@@ -404,27 +481,3 @@ const handleSubmit = async (e: Event) => {
   if (result.success) navigate({ to: '/dashboard' })
 }
 ```
-
-## Troubleshooting
-
-### Auth not persisting
-
-- Check PocketBase CORS settings
-- Verify localStorage is enabled
-- Check browser console for errors
-
-### Types not updating
-
-- Restart dev server
-- Check `routeTree.gen.ts` is regenerated
-- Run `pnpm build` to verify types
-
-### Queries not refetching
-
-- Check `staleTime` configuration
-- Use `queryClient.invalidateQueries()`
-- Verify query keys are correct
-
----
-
-This architecture provides a solid foundation for building scalable SolidJS applications with PocketBase!

@@ -1,41 +1,17 @@
-# SolidJS + PocketBase + TanStack Router + Realtime
+# SolidJS + PocketBase + TanStack Router
 
-A modern, production-ready template featuring **SolidJS**, **PocketBase**, and **TanStack Router** with built-in authentication, data fetching, and **realtime synchronization**.
+A modern, production-ready template featuring **SolidJS**, **PocketBase**, and **TanStack Router**. 
 
 ## 🚀 Features
 
 - ⚡ **SolidJS** - Fine-grained reactive framework for blazing-fast UIs
 - 🗄️ **PocketBase** - Open-source backend with realtime database, auth, and file storage
 - 🛣️ **TanStack Router** - Type-safe file-based routing with data loading
-- 🔐 **Authentication** - Complete auth flow with protected routes and redirects
 - 📊 **TanStack Query** - Server state management with caching and optimistic updates
-- ⚡ **Realtime Sync** - Auto-syncing data across all users without manual refresh
+- 🔄 **Realtime Sync** - Live data updates across all connected clients using PocketBase subscriptions
+- ⚡ **Optimistic Updates** - Instant UI feedback with automatic rollback on errors
 - 🎨 **Tailwind CSS** - Utility-first CSS framework for rapid UI development
 - 📦 **TypeScript** - Full type safety across the stack
-- 🔥 **HMR** - Hot module replacement with Vite for instant feedback
-
-## ✨ NEW: Realtime Integration
-
-This template now includes an **elegant, reusable integration** between PocketBase realtime and TanStack Query:
-
-```tsx
-// Enable realtime sync with just one line!
-const patients = useCollection('patients')
-useRealtimeCollection('patients')  // ✨ Auto-syncs across all users
-```
-
-**What you get:**
-- 🔄 Automatic cache updates when data changes
-- 🌐 Changes sync across all connected users instantly
-- 🧹 Auto cleanup - no memory leaks
-- 🎯 Type-safe with full TypeScript support
-- 📝 Zero boilerplate
-
-**Learn more:**
-- [Realtime Integration Guide](./REALTIME_INTEGRATION.md) - Complete overview
-- [Usage Examples](./REALTIME_USAGE.md) - Detailed usage guide
-- [Testing Guide](./TESTING_REALTIME.md) - How to test realtime features
-- [Code Examples](./src/examples/realtime-examples.tsx) - 10 working examples
 
 │   ├── index.tsx              # Home page
 
@@ -43,11 +19,11 @@ useRealtimeCollection('patients')  // ✨ Auto-syncs across all users
 
 │   ├── login.tsx              # Login page
 
-│   ├── _authenticated.tsx     # Protected route layoutLearn more about deploying your application with the [documentations](https://vite.dev/guide/static-deploy.html)
+│   ├── _authenticated.tsx     # Protected route layout
 
 │   └── _authenticated/
 │       ├── dashboard.tsx      # Protected dashboard
-│       └── patients.tsx       # Example with data fetching
+│       └── todos/             # Example with data fetching
 └── index.tsx                  # App entry point
 ```
 
@@ -115,12 +91,38 @@ const patients = useCollection('patients', { sort: '-created' })
 ```tsx
 useCollection('items')       // Fetch paginated records
 useRecord('items', () => id) // Fetch single record
-useCreateRecord('items')     // Create mutation
-useUpdateRecord('items')     // Update mutation  
-useDeleteRecord('items')     // Delete mutation
+useCreateRecord('items')     // Create mutation with optimistic updates
+useUpdateRecord('items')     // Update mutation with optimistic updates
+useDeleteRecord('items')     // Delete mutation with optimistic updates
 ```
 
-### 4. Router Context Integration
+### 4. Realtime Sync 
+
+**Realtime Subscriptions** - Auto-sync data across all clients:
+```tsx
+// Enable realtime sync for a collection
+useRealtimeCollection('patients')
+
+// Now any changes (create/update/delete) sync automatically across all tabs/users!
+```
+### 5. Optimistic Updates
+**Optimistic Updates** - Instant UI feedback:
+```tsx
+const deleteTodo = useDeleteRecord('todos')
+
+// UI updates immediately, syncs with server in background
+deleteTodo.mutate(id)
+
+// If server fails, changes are automatically rolled back
+```
+
+All mutations use optimistic updates by default:
+- ✅ **Create**: New item appears instantly in lists
+- ✅ **Update**: Changes reflect immediately  
+- ✅ **Delete**: Item disappears right away
+- 🛡️ **Error handling**: Automatic rollback if server fails
+
+### 6. Router Context Integration
 
 **index.tsx** - Passing auth state to router context:
 ```tsx
@@ -274,32 +276,6 @@ await update('items', id, data)
 await deleteRecord('items', id)
 ```
 
-## 🎨 Styling
-
-This template uses **Tailwind CSS v4** for styling. All components use Tailwind utility classes.
-
-To customize:
-- Edit `src/index.css` for global styles
-- Use Tailwind classes in components
-- Configure Tailwind in `vite.config.ts`
-
-## 📦 Building for Production
-
-```bash
-pnpm build
-```
-
-Output in `dist/` directory.
-
-Preview production build:
-```bash
-pnpm preview
-```
-
-## 🔧 Environment Variables
-
-- `VITE_POCKETBASE_URL` - Your PocketBase instance URL
-
 ## 📚 Resources
 
 - [SolidJS Documentation](https://docs.solidjs.com/)
@@ -326,7 +302,3 @@ pnpm preview
 ## 📝 License
 
 MIT
-
----
-
-**Happy coding!** 🚀

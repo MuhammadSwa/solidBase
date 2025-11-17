@@ -45,6 +45,12 @@ export interface PatientsRecord extends BaseRecord {
   // diagnosis?: string
 }
 
+
+export interface TodoRecord extends BaseRecord {
+  title: string
+  completed: boolean
+}
+
 /**
  * Add more collection interfaces as needed
  * 

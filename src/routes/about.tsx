@@ -81,7 +81,11 @@ function About() {
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">✓</span>
-              <span><strong>Realtime data sync</strong> - Live updates across all connected clients (try the Patients page!)</span>
+              <span><strong>Realtime data sync</strong> - Live updates across all connected clients (try the Patients or Todos pages!)</span>
+            </li>
+            <li class="flex items-start">
+              <span class="text-green-500 mr-2">✓</span>
+              <span><strong>Optimistic updates</strong> - Instant UI feedback with automatic error rollback</span>
             </li>
             <li class="flex items-start">
               <span class="text-green-500 mr-2">✓</span>

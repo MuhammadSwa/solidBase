@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context"
 import { toast } from "@/lib/toast"
 import { requireGuest } from "@/lib/route-guards"
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/_auth/login")({
   beforeLoad: ({ context }) => requireGuest(context),
   component: LoginPage,
 })
