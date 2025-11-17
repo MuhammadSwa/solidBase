@@ -85,7 +85,7 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
       <Portal>
         {/* Backdrop with blur effect */}
         <div
-          class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity z-40 animate-in fade-in duration-200"
+          class="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity z-40 animate-in fade-in duration-200"
           aria-hidden="true"
         />
         
@@ -104,24 +104,24 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
           >
             <div
               ref={dialogRef}
-              class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full max-w-lg animate-in zoom-in-95 duration-200"
+              class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all w-full max-w-lg animate-in zoom-in-95 duration-200 border border-gray-200 dark:border-gray-700"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Icon */}
-              <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                   <div
                     class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10"
                     classList={{
-                      "bg-red-100": props.isDangerous,
-                      "bg-blue-100": !props.isDangerous,
+                      "bg-red-100 dark:bg-red-900/50": props.isDangerous,
+                      "bg-blue-100 dark:bg-blue-900/50": !props.isDangerous,
                     }}
                   >
                     <Show
                       when={props.isDangerous}
                       fallback={
                         <svg
-                          class="h-6 w-6 text-blue-600"
+                          class="h-6 w-6 text-blue-600 dark:text-blue-400"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
@@ -136,7 +136,7 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
                       }
                     >
                       <svg
-                        class="h-6 w-6 text-red-600"
+                        class="h-6 w-6 text-red-600 dark:text-red-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
@@ -155,14 +155,14 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
                   <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left flex-1">
                     <h3 
                       id="dialog-title"
-                      class="text-lg font-semibold leading-6 text-gray-900"
+                      class="text-lg font-semibold leading-6 text-gray-900 dark:text-gray-100"
                     >
                       {props.title}
                     </h3>
                     <div class="mt-2">
                       <p 
                         id="dialog-description"
-                        class="text-sm text-gray-500"
+                        class="text-sm text-gray-500 dark:text-gray-400"
                       >
                         {props.message}
                       </p>
@@ -172,14 +172,14 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
               </div>
               
               {/* Actions */}
-              <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-3">
+              <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-3">
                 <button
                   ref={confirmButtonRef}
                   type="button"
                   class="inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm sm:w-auto transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
                   classList={{
-                    "bg-red-600 hover:bg-red-500 focus:ring-red-500": props.isDangerous,
-                    "bg-blue-600 hover:bg-blue-500 focus:ring-blue-500": !props.isDangerous,
+                    "bg-red-600 dark:bg-red-500 hover:bg-red-500 dark:hover:bg-red-600 focus:ring-red-500": props.isDangerous,
+                    "bg-blue-600 dark:bg-blue-500 hover:bg-blue-500 dark:hover:bg-blue-600 focus:ring-blue-500": !props.isDangerous,
                   }}
                   onClick={() => {
                     props.onConfirm()
@@ -193,7 +193,7 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
                 <button
                   ref={cancelButtonRef}
                   type="button"
-                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 sm:mt-0 sm:w-auto transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                   onClick={props.onClose}
                   aria-label={`${props.cancelText || "Cancel"} - Press Escape to cancel`}
                 >

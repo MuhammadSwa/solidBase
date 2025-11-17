@@ -76,14 +76,14 @@ function ToastItem(props: { toast: Toast }) {
   const getStyles = () => {
     switch (props.toast.type) {
       case 'success':
-        return 'bg-green-50 border-green-500 text-green-900'
+        return 'bg-green-50 dark:bg-green-900/90 border-green-500 dark:border-green-600 text-green-900 dark:text-green-100'
       case 'error':
-        return 'bg-red-50 border-red-500 text-red-900'
+        return 'bg-red-50 dark:bg-red-900/90 border-red-500 dark:border-red-600 text-red-900 dark:text-red-100'
       case 'warning':
-        return 'bg-yellow-50 border-yellow-500 text-yellow-900'
+        return 'bg-yellow-50 dark:bg-yellow-900/90 border-yellow-500 dark:border-yellow-600 text-yellow-900 dark:text-yellow-100'
       case 'info':
       default:
-        return 'bg-blue-50 border-blue-500 text-blue-900'
+        return 'bg-blue-50 dark:bg-blue-900/90 border-blue-500 dark:border-blue-600 text-blue-900 dark:text-blue-100'
     }
   }
   

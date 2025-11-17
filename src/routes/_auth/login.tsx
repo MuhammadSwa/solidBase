@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/solid-router"
 import { createSignal, Show } from "solid-js"
 import { useAuth } from "@/lib/auth-context"
-import { toast } from "@/lib/toast"
+import { toast } from "@/components/toast"
 import { requireGuest } from "@/lib/route-guards"
+import { PageLayout, PageContainer, Card, InfoBox, AuthInput, Button } from "@/components/ui"
 
 export const Route = createFileRoute("/_auth/login")({
   beforeLoad: ({ context }) => requireGuest(context),
@@ -70,86 +71,86 @@ function LoginPage() {
   }
 
   return (
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-md w-full space-y-8">
-        <div>
-          <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-          <p class="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <Link to="/signup" class="font-medium text-blue-600 hover:text-blue-500">
-              create a new account
-            </Link>
-          </p>
-          <div class="mt-3 p-2 bg-gray-50 border border-gray-200 rounded">
-            <p class="text-xs text-gray-600 text-center">
-              Works for both regular users and admins
+    <PageLayout variant="auth">
+      <PageContainer size="sm" padding={false}>
+        <div class="space-y-8">
+          <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-[var(--color-text-primary)]">
+              Sign in to your account
+            </h2>
+            <p class="mt-2 text-center text-sm text-[var(--color-text-secondary)]">
+              Or{" "}
+              <Link to="/signup" class="font-medium text-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary-hover)]">
+                create a new account
+              </Link>
             </p>
-          </div>
-          <Show when={search.redirect}>
-            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p class="text-sm text-blue-800 text-center">
-                <span class="font-medium">You'll be redirected to:</span>
-                <br />
-                <span class="font-semibold">{getRedirectMessage()}</span>
+            
+            <Card padding="sm" class="mt-3">
+              <p class="text-xs text-[var(--color-text-secondary)] text-center">
+                Works for both regular users and admins
               </p>
-            </div>
-          </Show>
-        </div>
-        <form class="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div class="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label for="email" class="sr-only">
-                Email address
-              </label>
-              <input
+            </Card>
+
+            <Show when={search.redirect}>
+              <div class="mt-4">
+                <InfoBox variant="info">
+                  <p class="text-center">
+                    <span class="font-medium">You'll be redirected to:</span>
+                    <br />
+                    <span class="font-semibold">{getRedirectMessage()}</span>
+                  </p>
+                </InfoBox>
+              </div>
+            </Show>
+          </div>
+
+          <form class="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div class="rounded-md shadow-sm -space-y-px">
+              <AuthInput
                 id="email"
-                name="email"
+                label="Email address"
                 type="email"
+                name="email"
                 autocomplete="email"
                 required
-                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email()}
                 onInput={(e) => setEmail(e.currentTarget.value)}
+                position="top"
               />
-            </div>
-            <div>
-              <label for="password" class="sr-only">
-                Password
-              </label>
-              <input
+              <AuthInput
                 id="password"
-                name="password"
+                label="Password"
                 type="password"
+                name="password"
                 autocomplete="current-password"
                 required
-                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
                 value={password()}
                 onInput={(e) => setPassword(e.currentTarget.value)}
+                position="bottom"
               />
             </div>
-          </div>
 
-          <Show when={error()}>
-            <div class="rounded-md bg-red-50 p-4">
-              <p class="text-sm text-red-800">{error()}</p>
+            <Show when={error()}>
+              <InfoBox variant="error">
+                <p>{error()}</p>
+              </InfoBox>
+            </Show>
+
+            <div>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={loading()}
+                class="w-full"
+              >
+                {loading() ? "Signing in..." : "Sign in"}
+              </Button>
             </div>
-          </Show>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading()}
-              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading() ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          </form>
+        </div>
+      </PageContainer>
+    </PageLayout>
   )
 }

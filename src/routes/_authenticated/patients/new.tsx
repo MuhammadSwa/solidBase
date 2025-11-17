@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { createSignal } from "solid-js"
 import { useCreateRecord } from "@/lib/queries"
-import { toast } from "@/lib/toast"
-import type { PatientsRecord } from "@/types/pocketbase-types"
+import { toast } from "@/components/toast"
+import { PageLayout, PageContainer, PageHeader, Card, InfoBox, FormField, FormActions, Button } from "@/components/ui"
 
 export const Route = createFileRoute("/_authenticated/patients/new")({
   component: AddPatientPage,
@@ -12,7 +12,7 @@ function AddPatientPage() {
   const navigate = useNavigate()
   const [name, setName] = createSignal("")
 
-  const createPatient = useCreateRecord<PatientsRecord>("patients")
+  const createPatient = useCreateRecord("patients")
 
   const handleSubmit = (e: Event) => {
     e.preventDefault()
@@ -46,69 +46,57 @@ function AddPatientPage() {
   }
 
   return (
-    <div class="min-h-screen bg-gray-50 py-12 px-4">
-      <div class="max-w-2xl mx-auto">
-        <div class="mb-6">
-          <h1 class="text-3xl font-bold text-gray-900">Add New Patient</h1>
-          <p class="mt-2 text-gray-600">
-            Enter patient information below. Changes will sync in realtime across all connected clients.
-          </p>
-        </div>
+    <PageLayout>
+      <PageContainer size="sm" padding>
+        <PageHeader
+          title="Add New Patient"
+          subtitle="Enter patient information below. Changes will sync in realtime across all connected clients."
+        />
 
-        <div class="bg-white shadow rounded-lg p-6">
+        <Card>
           <form onSubmit={handleSubmit} class="space-y-6">
-            <div>
-              <label
-                for="name"
-                class="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Patient Name *
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter patient name"
-                value={name()}
-                onInput={(e) => setName(e.currentTarget.value)}
-              />
-              <p class="mt-1 text-sm text-gray-500">
-                Full name of the patient
-              </p>
-            </div>
+            <FormField
+              id="name"
+              label="Patient Name"
+              type="text"
+              required
+              placeholder="Enter patient name"
+              value={name()}
+              onInput={(e) => setName(e.currentTarget.value)}
+              helperText="Full name of the patient"
+            />
 
-            <div class="flex gap-4 pt-4">
-              <button
+            <FormActions>
+              <Button
                 type="submit"
+                variant="primary"
                 disabled={createPatient.isPending}
-                class="flex-1 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                class="flex-1"
               >
                 Add Patient
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={handleCancel}
                 disabled={createPatient.isPending}
-                class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 transition"
               >
                 Cancel
-              </button>
-            </div>
+              </Button>
+            </FormActions>
           </form>
-        </div>
+        </Card>
 
-        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h3 class="text-sm font-medium text-blue-900 mb-2">⚡ Optimistic Updates Enabled</h3>
-          <p class="text-sm text-blue-800">
-            When you add a patient, you'll be redirected instantly and the new patient
-            will appear immediately in the list. The data syncs with the server in the
-            background with automatic rollback on errors.
-          </p>
+        <div class="mt-6">
+          <InfoBox variant="info" title="⚡ Optimistic Updates Enabled">
+            <p>
+              When you add a patient, you'll be redirected instantly and the new patient
+              will appear immediately in the list. The data syncs with the server in the
+              background with automatic rollback on errors.
+            </p>
+          </InfoBox>
         </div>
-      </div>
-    </div>
+      </PageContainer>
+    </PageLayout>
   )
 }
 

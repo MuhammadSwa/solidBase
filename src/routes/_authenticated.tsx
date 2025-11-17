@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   return (
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-[var(--color-bg-secondary)]">
       <Outlet />
     </div>
   )

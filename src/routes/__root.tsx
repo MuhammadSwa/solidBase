@@ -4,7 +4,8 @@ import { SolidQueryDevtools } from '@tanstack/solid-query-devtools'
 import type { RouterContext } from "@/index"
 import { Show } from "solid-js"
 import { useAuth } from "@/lib/auth-context"
-import { ToastContainer, toast } from "@/lib/toast"
+import { ToastContainer, toast } from "@/components/toast"
+import { DarkModeToggle } from "@/components/dark-mode-toggle"
 
 const RootLayout = () => {
   const auth = useAuth()
@@ -31,44 +32,45 @@ const RootLayout = () => {
   return (
     <>
       <ToastContainer />
-      <div class="p-2 flex gap-4 items-center border-b">
-        <Link to="/" class="[&.active]:font-bold">
+      <div class="p-2 flex gap-4 items-center border-b bg-[var(--color-bg-elevated)] border-[var(--color-border-primary)]">
+        <Link to="/" class="[&.active]:font-bold text-[var(--color-text-primary)] hover:text-[var(--color-brand-primary)]">
           Home
         </Link>
-        <Link to="/about" class="[&.active]:font-bold">
+        <Link to="/about" class="[&.active]:font-bold text-[var(--color-text-primary)] hover:text-[var(--color-brand-primary)]">
           About
         </Link>
         <Show when={auth.isAuthenticated()}>
-          <Link to="/dashboard" class="[&.active]:font-bold">
+          <Link to="/dashboard" class="[&.active]:font-bold text-[var(--color-text-primary)] hover:text-[var(--color-brand-primary)]">
             Dashboard
           </Link>
         </Show>
 
         <div class="ml-auto flex gap-2 items-center">
+          <DarkModeToggle />
           <Show
             when={auth.isAuthenticated()}
             fallback={
               <>
-                <Link to="/login" class="px-4 py-1 text-blue-600 hover:text-blue-800 font-medium">
+                <Link to="/login" class="px-4 py-1 text-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary-hover)] font-medium">
                   Login
                 </Link>
-                <Link to="/signup" class="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+                <Link to="/signup" class="px-4 py-1 bg-[var(--color-brand-primary)] text-white rounded hover:bg-[var(--color-brand-primary-hover)]">
                   Sign up
                 </Link>
               </>
             }
           >
-            <span class="text-sm text-gray-600">
+            <span class="text-sm text-[var(--color-text-secondary)]">
               {auth.user()?.email}
               <Show when={auth.isAdmin()}>
-                <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded">
+                <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-[var(--gradient-secondary-from)] text-[var(--color-accent-purple)] rounded">
                   Admin
                 </span>
               </Show>
             </span>
             <button
               onClick={handleLogout}
-              class="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300"
+              class="px-4 py-1 bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] rounded hover:bg-[var(--color-border-secondary)]"
             >
               Logout
             </button>

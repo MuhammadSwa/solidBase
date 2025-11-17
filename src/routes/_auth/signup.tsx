@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/solid-router"
 import { createSignal, Show } from "solid-js"
 import { useAuth } from "@/lib/auth-context"
-import { toast } from "@/lib/toast"
+import { toast } from "@/components/toast"
 import { requireGuest } from "@/lib/route-guards"
+import { PageLayout, PageContainer, InfoBox, AuthInput, Button } from "@/components/ui"
 
 export const Route = createFileRoute("/_auth/signup")({
   beforeLoad: ({ context }) => requireGuest(context),
@@ -65,88 +66,80 @@ function SignupPage() {
   }
 
   return (
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-md w-full space-y-8">
-        <div>
-          <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p class="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <Link to="/login" class="font-medium text-blue-600 hover:text-blue-500">
-              sign in to your existing account
-            </Link>
-          </p>
-        </div>
-        <form class="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div class="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label for="email" class="sr-only">
-                Email address
-              </label>
-              <input
+    <PageLayout variant="auth">
+      <PageContainer size="sm" padding={false}>
+        <div class="space-y-8">
+          <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-[var(--color-text-primary)]">
+              Create your account
+            </h2>
+            <p class="mt-2 text-center text-sm text-[var(--color-text-secondary)]">
+              Or{" "}
+              <Link to="/login" class="font-medium text-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary-hover)]">
+                sign in to your existing account
+              </Link>
+            </p>
+          </div>
+
+          <form class="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div class="rounded-md shadow-sm -space-y-px">
+              <AuthInput
                 id="email"
-                name="email"
+                label="Email address"
                 type="email"
+                name="email"
                 autocomplete="email"
                 required
-                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
                 value={email()}
                 onInput={(e) => setEmail(e.currentTarget.value)}
+                position="top"
               />
-            </div>
-            <div>
-              <label for="password" class="sr-only">
-                Password
-              </label>
-              <input
+              <AuthInput
                 id="password"
-                name="password"
+                label="Password"
                 type="password"
+                name="password"
                 autocomplete="new-password"
                 required
-                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Password (min. 8 characters)"
                 value={password()}
                 onInput={(e) => setPassword(e.currentTarget.value)}
+                position="middle"
               />
-            </div>
-            <div>
-              <label for="password-confirm" class="sr-only">
-                Confirm Password
-              </label>
-              <input
+              <AuthInput
                 id="password-confirm"
-                name="password-confirm"
+                label="Confirm Password"
                 type="password"
+                name="password-confirm"
                 autocomplete="new-password"
                 required
-                class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Confirm password"
                 value={passwordConfirm()}
                 onInput={(e) => setPasswordConfirm(e.currentTarget.value)}
+                position="bottom"
               />
             </div>
-          </div>
 
-          <Show when={error()}>
-            <div class="rounded-md bg-red-50 p-4">
-              <p class="text-sm text-red-800">{error()}</p>
+            <Show when={error()}>
+              <InfoBox variant="error">
+                <p>{error()}</p>
+              </InfoBox>
+            </Show>
+
+            <div>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={loading()}
+                class="w-full"
+              >
+                {loading() ? "Creating account..." : "Sign up"}
+              </Button>
             </div>
-          </Show>
-
-          <div>
-            <button
-              type="submit"
-              disabled={loading()}
-              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading() ? "Creating account..." : "Sign up"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          </form>
+        </div>
+      </PageContainer>
+    </PageLayout>
   )
 }

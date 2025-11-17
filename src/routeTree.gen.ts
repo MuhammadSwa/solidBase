@@ -18,7 +18,9 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthenticatedTodosIndexRouteImport } from './routes/_authenticated/todos/index'
 import { Route as AuthenticatedPatientsIndexRouteImport } from './routes/_authenticated/patients/index'
 import { Route as AuthenticatedTodosNewRouteImport } from './routes/_authenticated/todos/new'
+import { Route as AuthenticatedTodosIdRouteImport } from './routes/_authenticated/todos/$id'
 import { Route as AuthenticatedPatientsNewRouteImport } from './routes/_authenticated/patients/new'
+import { Route as AuthenticatedPatientsIdRouteImport } from './routes/_authenticated/patients/$id'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -65,12 +67,22 @@ const AuthenticatedTodosNewRoute = AuthenticatedTodosNewRouteImport.update({
   path: '/todos/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTodosIdRoute = AuthenticatedTodosIdRouteImport.update({
+  id: '/todos/$id',
+  path: '/todos/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPatientsNewRoute =
   AuthenticatedPatientsNewRouteImport.update({
     id: '/patients/new',
     path: '/patients/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPatientsIdRoute = AuthenticatedPatientsIdRouteImport.update({
+  id: '/patients/$id',
+  path: '/patients/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -78,7 +90,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/patients/$id': typeof AuthenticatedPatientsIdRoute
   '/patients/new': typeof AuthenticatedPatientsNewRoute
+  '/todos/$id': typeof AuthenticatedTodosIdRoute
   '/todos/new': typeof AuthenticatedTodosNewRoute
   '/patients': typeof AuthenticatedPatientsIndexRoute
   '/todos': typeof AuthenticatedTodosIndexRoute
@@ -89,7 +103,9 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/patients/$id': typeof AuthenticatedPatientsIdRoute
   '/patients/new': typeof AuthenticatedPatientsNewRoute
+  '/todos/$id': typeof AuthenticatedTodosIdRoute
   '/todos/new': typeof AuthenticatedTodosNewRoute
   '/patients': typeof AuthenticatedPatientsIndexRoute
   '/todos': typeof AuthenticatedTodosIndexRoute
@@ -102,7 +118,9 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/patients/$id': typeof AuthenticatedPatientsIdRoute
   '/_authenticated/patients/new': typeof AuthenticatedPatientsNewRoute
+  '/_authenticated/todos/$id': typeof AuthenticatedTodosIdRoute
   '/_authenticated/todos/new': typeof AuthenticatedTodosNewRoute
   '/_authenticated/patients/': typeof AuthenticatedPatientsIndexRoute
   '/_authenticated/todos/': typeof AuthenticatedTodosIndexRoute
@@ -115,7 +133,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/dashboard'
+    | '/patients/$id'
     | '/patients/new'
+    | '/todos/$id'
     | '/todos/new'
     | '/patients'
     | '/todos'
@@ -126,7 +146,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/dashboard'
+    | '/patients/$id'
     | '/patients/new'
+    | '/todos/$id'
     | '/todos/new'
     | '/patients'
     | '/todos'
@@ -138,7 +160,9 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/signup'
     | '/_authenticated/dashboard'
+    | '/_authenticated/patients/$id'
     | '/_authenticated/patients/new'
+    | '/_authenticated/todos/$id'
     | '/_authenticated/todos/new'
     | '/_authenticated/patients/'
     | '/_authenticated/todos/'
@@ -217,6 +241,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AuthenticatedTodosNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/todos/$id': {
+      id: '/_authenticated/todos/$id'
+      path: '/todos/$id'
+      fullPath: '/todos/$id'
+      preLoaderRoute: typeof AuthenticatedTodosIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/patients/new': {
       id: '/_authenticated/patients/new'
       path: '/patients/new'
@@ -224,12 +255,21 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AuthenticatedPatientsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/patients/$id': {
+      id: '/_authenticated/patients/$id'
+      path: '/patients/$id'
+      fullPath: '/patients/$id'
+      preLoaderRoute: typeof AuthenticatedPatientsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPatientsIdRoute: typeof AuthenticatedPatientsIdRoute
   AuthenticatedPatientsNewRoute: typeof AuthenticatedPatientsNewRoute
+  AuthenticatedTodosIdRoute: typeof AuthenticatedTodosIdRoute
   AuthenticatedTodosNewRoute: typeof AuthenticatedTodosNewRoute
   AuthenticatedPatientsIndexRoute: typeof AuthenticatedPatientsIndexRoute
   AuthenticatedTodosIndexRoute: typeof AuthenticatedTodosIndexRoute
@@ -237,7 +277,9 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPatientsIdRoute: AuthenticatedPatientsIdRoute,
   AuthenticatedPatientsNewRoute: AuthenticatedPatientsNewRoute,
+  AuthenticatedTodosIdRoute: AuthenticatedTodosIdRoute,
   AuthenticatedTodosNewRoute: AuthenticatedTodosNewRoute,
   AuthenticatedPatientsIndexRoute: AuthenticatedPatientsIndexRoute,
   AuthenticatedTodosIndexRoute: AuthenticatedTodosIndexRoute,

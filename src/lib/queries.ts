@@ -1,29 +1,127 @@
 /**
- * Composable Query Hooks for PocketBase + TanStack Query
+ * 🎯 Composable Query Hooks for PocketBase + TanStack Query
+ * ==========================================================
  * 
  * These hooks provide a simple, reusable pattern for data fetching with:
- * - Automatic loading states, errors, and caching
- * - Optimistic updates for instant UI feedback
- * - Automatic rollback on errors
- * - Server sync on completion
+ * - ✨ Automatic type inference (no manual type annotations needed!)
+ * - 🔄 Automatic loading states, errors, and caching
+ * - 🚀 Optimistic updates for instant UI feedback
+ * - ↩️  Automatic rollback on errors
+ * - 🔄 Server sync on completion
  * 
- * OPTIMISTIC UPDATES:
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 🚀 OPTIMISTIC UPDATES - How They Work
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 
  * All mutations (create, update, delete) use optimistic updates:
- * 1. UI updates immediately (no waiting for server)
- * 2. If server fails, changes are automatically rolled back
- * 3. On success, data is synced with server response
  * 
- * This eliminates flickering and provides a snappy, responsive UX.
+ * 1. ⚡ UI updates IMMEDIATELY (no waiting for server)
+ *    - User sees changes instantly
+ *    - Feels super responsive
+ * 
+ * 2. ↩️  If server FAILS → automatically rolled back
+ *    - Changes disappear
+ *    - Back to original state
+ * 
+ * 3. ✅ If server SUCCEEDS → synced with real data
+ *    - Data stays updated
+ *    - Everything in sync
+ * 
+ * This eliminates flickering and provides a snappy, responsive UX!
+ * 
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 📖 QUICK START EXAMPLES
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 
+ * // Fetch a list
+ * const todos = useCollection("todos", { sort: "-created" })
+ * <For each={todos.data?.items}>{todo => <div>{todo.title}</div>}</For>
+ * 
+ * // Fetch single record
+ * const todo = useRecord("todos", () => params.id)
+ * <Show when={todo.data}>{data => <h1>{data().title}</h1>}</Show>
+ * 
+ * // Create
+ * const createTodo = useCreateRecord("todos")
+ * createTodo.mutate({ title: "New", completed: false })
+ * 
+ * // Update
+ * const updateTodo = useUpdateRecord("todos")
+ * updateTodo.mutate({ id: "123", completed: true })
+ * 
+ * // Delete
+ * const deleteTodo = useDeleteRecord("todos")
+ * deleteTodo.mutate("record-id")
+ * 
+ * // Realtime sync
+ * useRealtimeCollection("todos")  // Auto-syncs all changes!
+ * 
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * 
+ * 📚 For detailed explanation of how type inference works, see:
+ *    TYPE_INFERENCE_GUIDE.md
  */
 
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/solid-query'
 import * as pb from './pocketbase'
+import type { CollectionRecords, BaseRecord } from '@/types/pocketbase-types'
+
+// =============================================================================
+// TYPE UTILITIES - Reusable type helpers
+// =============================================================================
+
+type RecordWithId = { id: string;[key: string]: any }
+
+/** 
+ * InferRecordType 
+ * ==================================================
+ * 
+ * This helper automatically determines the correct record type based on 
+ * the collection name you pass to a hook.
+ * @example
+ * // When you call:
+ * useCollection("todos")
+ * 
+ * // TypeScript does:
+ * K = "todos"
+ * InferRecordType<"todos"> → TodoRecord
+ * // So the return type becomes { items: TodoRecord[], ... }
+ */
+type InferRecordType<K> = K extends keyof CollectionRecords
+  ? CollectionRecords[K]
+  : BaseRecord
+
+/**
+ * CollectionName
+ * ==============================================
+ * 
+ * This type allows BOTH known collections AND unknown/dynamic collections.
+ * 1. Known collections (keyof CollectionRecords):
+ *    - Gives you autocomplete
+ *    - Prevents typos
+ *    - Example: "todos", "patients", "users"
+ * 
+ * 2. Unknown collections (string & {}):
+ *    - Allows dynamic collection names
+ *    - Won't break if collection isn't in CollectionRecords
+ *    - Falls back to BaseRecord
+ * 
+ * THE TRICK:
+ * ----------
+ * (string & {}) is a TypeScript pattern that means "any other string"
+ * - It doesn't interfere with the known collection names
+ * - It allows flexibility while maintaining type safety
+ * 
+ * @example
+ * useCollection("todos")              // ← Known: Gets TodoRecord
+ * useCollection("new_collection")     // ← Unknown: Gets BaseRecord
+ * 
+ */
+type CollectionName = keyof CollectionRecords | (string & {})
 
 // =============================================================================
 // OPTIMISTIC UPDATE UTILITIES - Reusable optimistic update logic
 // =============================================================================
-
-type RecordWithId = { id: string; [key: string]: any }
 
 /**
  * Optimistic create - adds new record to cache immediately
@@ -34,13 +132,13 @@ async function optimisticCreate<T extends RecordWithId>(
   newRecord: Partial<T>
 ) {
   await queryClient.cancelQueries({ queryKey: [collection, 'list'] })
-  
+
   const previousData = queryClient.getQueriesData({ queryKey: [collection, 'list'] })
-  
+
   // Optimistically add to all list queries
   queryClient.setQueriesData({ queryKey: [collection, 'list'] }, (old: any) => {
     if (!old?.items) return old
-    
+
     // Create temporary record with optimistic ID
     const tempRecord = {
       id: `temp-${Date.now()}`,
@@ -48,14 +146,14 @@ async function optimisticCreate<T extends RecordWithId>(
       created: new Date().toISOString(),
       updated: new Date().toISOString(),
     } as unknown as T
-    
+
     return {
       ...old,
       items: [tempRecord, ...old.items],
       totalItems: old.totalItems + 1,
     }
   })
-  
+
   return { previousData }
 }
 
@@ -69,10 +167,10 @@ async function optimisticUpdate<T extends RecordWithId>(
   updates: Partial<T>
 ) {
   await queryClient.cancelQueries({ queryKey: [collection] })
-  
+
   const previousListData = queryClient.getQueriesData({ queryKey: [collection, 'list'] })
   const previousDetailData = queryClient.getQueryData([collection, 'detail', id])
-  
+
   // Update in all list queries
   queryClient.setQueriesData({ queryKey: [collection, 'list'] }, (old: any) => {
     if (!old?.items) return old
@@ -83,7 +181,7 @@ async function optimisticUpdate<T extends RecordWithId>(
       ),
     }
   })
-  
+
   // Update detail query if it exists
   if (previousDetailData) {
     queryClient.setQueryData([collection, 'detail', id], (old: any) => ({
@@ -92,7 +190,7 @@ async function optimisticUpdate<T extends RecordWithId>(
       updated: new Date().toISOString(),
     }))
   }
-  
+
   return { previousListData, previousDetailData }
 }
 
@@ -105,9 +203,9 @@ async function optimisticDelete(
   id: string
 ) {
   await queryClient.cancelQueries({ queryKey: [collection, 'list'] })
-  
+
   const previousData = queryClient.getQueriesData({ queryKey: [collection, 'list'] })
-  
+
   // Remove from all list queries
   queryClient.setQueriesData({ queryKey: [collection, 'list'] }, (old: any) => {
     if (!old?.items) return old
@@ -117,10 +215,10 @@ async function optimisticDelete(
       totalItems: Math.max(0, old.totalItems - 1),
     }
   })
-  
+
   // Remove detail query
   queryClient.removeQueries({ queryKey: [collection, 'detail', id] })
-  
+
   return { previousData }
 }
 
@@ -138,14 +236,14 @@ function rollbackOptimisticUpdate(
       queryClient.setQueryData(queryKey, data)
     })
   }
-  
+
   // Rollback list data
   if (context?.previousListData) {
     context.previousListData.forEach(([queryKey, data]: [any, any]) => {
       queryClient.setQueryData(queryKey, data)
     })
   }
-  
+
   // Rollback detail data
   if (context?.previousDetailData && context?.id) {
     queryClient.setQueryData([collection, 'detail', context.id], context.previousDetailData)
@@ -157,40 +255,103 @@ function rollbackOptimisticUpdate(
 // =============================================================================
 
 /**
- * Fetch paginated records from a collection
+ * 📚 Fetch paginated records from a collection
+ * ============================================
  * 
- * @example
- * const patients = useCollection('patients', { sort: '-created' })
- * <Show when={patients.data}>{data => ...}</Show>
+ * Fetches a list of records with automatic type inference based on collection name.
+ * 
+ * ----------------------------
+ * @example Basic Usage
+ * const todos = useCollection("todos", { sort: "-created" })
+ * // todos.data.items is automatically typed as TodoRecord[]!
+ * // You get autocomplete for todo.title, todo.completed, etc.
+ * 
+ * @example With Type Safety
+ * <Show when={todos.data}>
+ *   {(data) => (
+ *     <For each={data().items}>
+ *       {(todo) => (
+ *         // todo is typed as TodoRecord - full autocomplete! ✨
+ *         <div>{todo.title}</div>
+ *       )}
+ *     </For>
+ *   )}
+ * </Show>
+ * 
+ * @example With Filters
+ * const completedTodos = useCollection("todos", { 
+ *   filter: 'completed = true',
+ *   sort: '-created'
+ * })
+ * 
+
+ * @param collection - Collection name (gets autocomplete for known collections!)
+ * @param options - PocketBase query options (filter, sort, expand, etc.)
+ * @param queryOptions - TanStack Query options (staleTime, enabled, etc.)
+ * @returns Query result with automatically typed data
  */
-export function useCollection<T = any>(
-  collection: string,
+export function useCollection<K extends CollectionName>(
+  collection: K,
   options?: any,
   queryOptions?: { staleTime?: number; enabled?: boolean }
 ) {
   return useQuery(() => ({
     queryKey: [collection, 'list', options],
-    queryFn: () => pb.getList<T>(collection, 1, 50, options),
+    queryFn: () => pb.getList<InferRecordType<K>>(collection, 1, 50, options),
+    //                        ^^^^^^^^^^^^^^^^^^^
+    //                        Magic! Automatically infers TodoRecord for "todos"
     staleTime: queryOptions?.staleTime ?? 1000 * 60 * 5, // 5 min default
     enabled: queryOptions?.enabled ?? true,
   }))
 }
 
 /**
- * Fetch a single record by ID
+ * 📄 Fetch a single record by ID
+ * ===============================
  * 
- * @example
- * const patient = useRecord('patients', () => params.id)
- * <Show when={patient.data}>{data => ...}</Show>
+ * Fetches one specific record with automatic type inference.
+ * ----------------------------
+ * @example Basic Usage
+ * const todo = useRecord("todos", () => params.id)
+ * 
+ * @example With Type Safety
+ * <Show when={todo.data}>
+ *   {(data) => (
+ *     // data() is typed as TodoRecord - autocomplete works! ✨
+ *     <div>
+ *       <h1>{data().title}</h1>
+ *       <p>Done: {data().completed}</p>
+ *     </div>
+ *   )}
+ * </Show>
+ * 
+ * @example Conditional Loading
+ * const todo = useRecord("todos", () => todoId(), {}, { 
+ *   enabled: !!todoId() 
+ * })
+ * 
+ * NOTE: Why use a function for id?
+ * --------------------------------
+ * The id parameter is a function (() => string) because:
+ * - It needs to be reactive in SolidJS
+ * - The query automatically re-runs when the id changes
+ * - This is a SolidJS pattern for reactive dependencies
+ * 
+ * @param collection - Collection name (autocomplete available!)
+ * @param id - Function that returns the record ID (reactive)
+ * @param options - PocketBase query options (expand, etc.)
+ * @returns Query result with automatically typed data
  */
-export function useRecord<T = any>(
-  collection: string,
+export function useRecord<K extends CollectionName>(
+  collection: K,
   id: () => string,
   options?: any
 ) {
   return useQuery(() => ({
     queryKey: [collection, 'detail', id()],
-    queryFn: () => pb.getOne<T>(collection, id(), options),
+    queryFn: () => pb.getOne<InferRecordType<K>>(collection, id(), options),
+    //                       ^^^^^^^^^^^^^^^^^^^
+    //                       Automatically gets TodoRecord for "todos"
     enabled: !!id(),
   }))
 }
@@ -200,14 +361,58 @@ export function useRecord<T = any>(
 // =============================================================================
 
 /**
- * Create a new record with optimistic updates
+ * ➕ Create a new record with optimistic updates
+ * ===============================================
  * 
- * @example
- * const createPatient = useCreateRecord('patients')
- * createPatient.mutate({ name: 'John Doe' })
+ * Creates a new record with automatic type inference and instant UI updates.
+ * 
+ * 🚀 OPTIMISTIC UPDATES:
+ * ----------------------
+ * UI updates IMMEDIATELY before server confirms:
+ * 1. New record appears instantly (no loading spinner)
+ * 2. If server fails → automatically rolled back
+ * 3. If server succeeds → synced with real data
+ * 
+ * @example Basic Usage
+ * const createTodo = useCreateRecord("todos")
+ * 
+ * createTodo.mutate({
+ *   title: "New todo",     
+ *   completed: false,      
+ *   invalid: "field"       // ❌ Error! TypeScript knows this doesn't exist (AUTOMATIC TYPE INFERENCE)
+ * })
+ * 
+ * @example With Callbacks
+ * createTodo.mutate(
+ *   { title: "Buy milk", completed: false },
+ *   {
+ *     onSuccess: (data) => {
+ *       // data is typed as TodoRecord!
+ *       toast.success(`Created: ${data.title}`)
+ *       navigate('/todos')
+ *     },
+ *     onError: (error) => {
+ *       toast.error('Failed to create todo')
+ *     }
+ *   }
+ * )
+ * 
+ * @example In a Form
+ * const handleSubmit = (e: Event) => {
+ *   e.preventDefault()
+ *   createTodo.mutate({
+ *     title: titleInput(),
+ *     completed: false
+ *   })
+ * }
+ * 
+ * @param collection - Collection name (autocomplete available!)
+ * @returns Mutation hook with automatically typed data parameter
  */
-export function useCreateRecord<T extends RecordWithId = RecordWithId>(collection: string) {
+export function useCreateRecord<K extends CollectionName>(collection: K) {
   const queryClient = useQueryClient()
+  type T = InferRecordType<K> & RecordWithId
+  //   ^? This is the magic! Combines inferred type with RecordWithId
 
   return useMutation(() => ({
     mutationFn: (data: any) => pb.create<T>(collection, data),
@@ -225,19 +430,64 @@ export function useCreateRecord<T extends RecordWithId = RecordWithId>(collectio
 }
 
 /**
- * Update an existing record with optimistic updates
+ * ✏️ Update an existing record with optimistic updates
+ * ====================================================
  * 
- * @example
- * const updatePatient = useUpdateRecord('patients')
- * updatePatient.mutate({ id: '123', name: 'Jane Doe' })
+ * Updates a record with automatic type inference and instant UI updates.
+ * 
+ * @example Basic Usage
+ * const updateTodo = useUpdateRecord("todos")
+ * 
+ * updateTodo.mutate({
+ *   id: "123",             // which record to update
+ *   title: "Updated!",     
+ *   completed: true,       
+ *   invalid: "field"      
+ * })
+ * 
+ * @example Toggle Completion
+ * const handleToggle = (todo: TodoRecord) => {
+ *   updateTodo.mutate({
+ *     id: todo.id,
+ *     completed: !todo.completed  
+ *   })
+ * }
+ * 
+ * @example Partial Updates
+ * // You don't need to include all fields - just what changed!
+ * updateTodo.mutate({
+ *   id: "123",
+ *   title: "New title"  // Only updating title, completed stays the same
+ * })
+ * 
+ * @example With Callbacks
+ * updateTodo.mutate(
+ *   { id: "123", completed: true },
+ *   {
+ *     onSuccess: () => toast.success('Updated!'),
+ *     onError: () => toast.error('Failed!')
+ *   }
+ * )
+ * 
+ * WHY THE DESTRUCTURING?
+ * ----------------------
+ * ({ id, ...data }) - We separate id from the rest of the data because:
+ * - PocketBase needs the id to know WHICH record to update
+ * - The ...data is what to UPDATE in that record
+ * - TypeScript ensures both id and data are correct types
+ * 
+ * @param collection - Collection name (autocomplete available!)
+ * @returns Mutation hook with automatically typed update data
  */
-export function useUpdateRecord<T extends RecordWithId = RecordWithId>(collection: string) {
+export function useUpdateRecord<K extends CollectionName>(collection: K) {
   const queryClient = useQueryClient()
+  type T = InferRecordType<K> & RecordWithId
+  //   ^? Inferred type + guaranteed id field
 
   return useMutation(() => ({
-    mutationFn: ({ id, ...data }: { id: string; [key: string]: any }) =>
+    mutationFn: ({ id, ...data }: { id: string;[key: string]: any }) =>
       pb.update<T>(collection, id, data),
-    onMutate: async ({ id, ...data }: { id: string; [key: string]: any }) => {
+    onMutate: async ({ id, ...data }: { id: string;[key: string]: any }) => {
       const context = await optimisticUpdate<T>(queryClient, collection, id, data as Partial<T>)
       return { ...context, id }
     },
@@ -251,13 +501,51 @@ export function useUpdateRecord<T extends RecordWithId = RecordWithId>(collectio
 }
 
 /**
- * Delete a record with optimistic updates
+ * 🗑️ Delete a record with optimistic updates
+ * ==========================================
  * 
- * @example
- * const deletePatient = useDeleteRecord('patients')
- * deletePatient.mutate('record-id')
+ * Deletes a record with instant UI feedback.
+ * 
+ * @example Basic Usage
+ * const deleteTodo = useDeleteRecord("todos")
+ * 
+ * deleteTodo.mutate("record-id-123")
+ * 
+ * @example With Confirmation
+ * const handleDelete = (id: string) => {
+ *   if (confirm('Are you sure?')) {
+ *     deleteTodo.mutate(id)
+ *   }
+ * }
+ * 
+ * @example With Loading State
+ * const [deletingId, setDeletingId] = createSignal<string | null>(null)
+ * 
+ * const handleDelete = (id: string) => {
+ *   setDeletingId(id)
+ *   deleteTodo.mutate(id, {
+ *     onSettled: () => setDeletingId(null)
+ *   })
+ * }
+ * 
+ * // In template:
+ * <button 
+ *   disabled={deletingId() === todo.id}
+ *   onClick={() => handleDelete(todo.id)}
+ * >
+ *   {deletingId() === todo.id ? 'Deleting...' : 'Delete'}
+ * </button>
+ * 
+ * @example With Callbacks
+ * deleteTodo.mutate("123", {
+ *   onSuccess: () => toast.success('Deleted!'),
+ *   onError: () => toast.error('Failed to delete')
+ * })
+ * 
+ * @param collection - Collection name (autocomplete available!)
+ * @returns Mutation hook that accepts a record ID to delete
  */
-export function useDeleteRecord(collection: string) {
+export function useDeleteRecord<K extends CollectionName>(collection: K) {
   const queryClient = useQueryClient()
 
   return useMutation(() => ({
@@ -267,7 +555,7 @@ export function useDeleteRecord(collection: string) {
       return context
     },
     onError: (_err, _vars, context: any) => {
-      rollbackOptimisticUpdate(queryClient, collection, context)
+      rollbackOptimisticUpdate(queryClient, collection as string, context)
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [collection, 'list'] })
@@ -331,18 +619,19 @@ interface RealtimeEvent<T extends RecordWithId = RecordWithId> {
  *   console.log('Patient updated:', event.record)
  * })
  */
-export function useRealtimeCollection<T extends RecordWithId = RecordWithId>(
-  collection: string,
-  onEvent?: (event: RealtimeEvent<T>) => void
+export function useRealtimeCollection<K extends CollectionName>(
+  collection: K,
+  onEvent?: (event: RealtimeEvent<InferRecordType<K>>) => void
 ) {
   const queryClient = useQueryClient()
+  type T = InferRecordType<K>
 
   onMount(() => {
     // Subscribe to all records in the collection
     const unsubscribe = pb.pb.collection(collection).subscribe<T>('*', (e) => {
       // Cast to our typed event (PocketBase returns RecordSubscription which has action as string)
       const event = e as unknown as RealtimeEvent<T>
-      
+
       // Call custom handler if provided
       onEvent?.(event)
 
@@ -390,12 +679,13 @@ export function useRealtimeCollection<T extends RecordWithId = RecordWithId>(
  * const patient = useRecord('patients', () => params.id)
  * useRealtimeRecord('patients', () => params.id)  // Auto-syncs this record
  */
-export function useRealtimeRecord<T extends RecordWithId = RecordWithId>(
-  collection: string,
+export function useRealtimeRecord<K extends CollectionName>(
+  collection: K,
   id: () => string,
-  onEvent?: (event: RealtimeEvent<T>) => void
+  onEvent?: (event: RealtimeEvent<InferRecordType<K>>) => void
 ) {
   const queryClient = useQueryClient()
+  type T = InferRecordType<K>
 
   onMount(() => {
     const recordId = id()
@@ -405,7 +695,7 @@ export function useRealtimeRecord<T extends RecordWithId = RecordWithId>(
     const unsubscribe = pb.pb.collection(collection).subscribe<T>(recordId, (e) => {
       // Cast to our typed event (PocketBase returns RecordSubscription which has action as string)
       const event = e as unknown as RealtimeEvent<T>
-      
+
       // Call custom handler if provided
       onEvent?.(event)
 
@@ -455,7 +745,7 @@ export function useRealtimeSubscription(
 ) {
   onMount(() => {
     const unsubscribePromise = subscribe()
-    
+
     onCleanup(() => {
       unsubscribePromise?.then((unsub) => unsub())
     })

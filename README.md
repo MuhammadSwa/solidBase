@@ -12,6 +12,15 @@ A modern, production-ready template featuring **SolidJS**, **PocketBase**, and *
 - ⚡ **Optimistic Updates** - Instant UI feedback with automatic rollback on errors
 - 🎨 **Tailwind CSS** - Utility-first CSS framework for rapid UI development
 - 📦 **TypeScript** - Full type safety across the stack
+- ✨ **Automatic Type Inference** - No manual type annotations needed!
+
+## 📚 Documentation
+
+- **[TYPE_INFERENCE_GUIDE.md](./TYPE_INFERENCE_GUIDE.md)** - Complete guide explaining how automatic type inference works (beginner-friendly!)
+- **[TYPE_INFERENCE_QUICK_REF.md](./TYPE_INFERENCE_QUICK_REF.md)** - Quick reference cheatsheet for common patterns
+- **[SETUP.md](./SETUP.md)** - Detailed setup and installation instructions
+- **[REALTIME_USAGE.md](./REALTIME_USAGE.md)** - How to use realtime features
+- **[TODO_APP_README.md](./TODO_APP_README.md)** - Example todo app walkthrough
 
 │   ├── index.tsx              # Home page
 

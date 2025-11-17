@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import { For, Show, Suspense, createSignal } from "solid-js"
 import { useCollection, useDeleteRecord, useRealtimeCollection } from "@/lib/queries"
-import { type PatientsRecord } from "@/types/pocketbase-types"
-import { useConfirmationDialog } from "@/lib/confirmation-dialog"
+import { useConfirmationDialog } from "@/components/confirmation-dialog"
+import { PageLayout, PageContainer, PageHeader, Card } from "@/components/ui"
 
 export const Route = createFileRoute("/_authenticated/patients/")({
   component: PatientsPage,
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/patients/")({
 
 function PatientsPage() {
   // Use the composable query hook - much simpler!
-  const patients = useCollection<PatientsRecord>("patients", { sort: "-created" })
+  const patients = useCollection("patients", { sort: "-created" })
   const deletePatient = useDeleteRecord("patients")
   const [deletingId, setDeletingId] = createSignal<string | null>(null)
   const confirmDialog = useConfirmationDialog()
@@ -37,22 +37,24 @@ function PatientsPage() {
   return (
     <>
       <confirmDialog.ConfirmationDialog />
-      <div class="p-8">
-        <div class="max-w-7xl mx-auto">
-          <div class="flex justify-between items-center mb-6">
-          <h1 class="text-3xl font-bold text-gray-900">Patients</h1>
-          <Link
-            to="/patients/new"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-          >
-            Add Patient
-          </Link>
-        </div>
+      <PageLayout>
+        <PageContainer size="full">
+          <PageHeader 
+            title="Patients" 
+            action={
+              <Link
+                to="/patients/new"
+                class="px-4 py-2 bg-[var(--color-brand-primary)] text-white rounded hover:bg-[var(--color-brand-primary-hover)] transition"
+              >
+                Add Patient
+              </Link>
+            }
+          />
 
-        <div class="bg-white shadow rounded-lg overflow-hidden">
+        <Card padding="none" shadow={false}>
           <Suspense
             fallback={
-              <div class="p-8 text-center text-gray-500">Loading patients...</div>
+              <div class="p-8 text-center text-[var(--color-text-tertiary)]">Loading patients...</div>
             }
           >
             <Show
@@ -60,7 +62,7 @@ function PatientsPage() {
               fallback={
                 <div class="p-8 text-center">
                   <Show when={patients.isError}>
-                    <p class="text-red-600">
+                    <p class="text-[var(--color-error)]">
                       Error: {patients.error?.message || 'Failed to load patients'}
                     </p>
                   </Show>
@@ -69,29 +71,29 @@ function PatientsPage() {
             >
               {(data) => (
                 <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                  <table class="min-w-full divide-y divide-[var(--color-border-primary)]">
+                    <thead class="bg-[var(--color-bg-secondary)]">
                       <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           ID
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           Name
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           Created
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-[var(--color-bg-elevated)] divide-y divide-[var(--color-border-primary)]">
                       <For
                         each={data().items}
                         fallback={
                           <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="4" class="px-6 py-4 text-center text-[var(--color-text-tertiary)]">
                               No patients found
                             </td>
                           </tr>
@@ -101,27 +103,36 @@ function PatientsPage() {
                           const isDeleting = () => deletingId() === patient.id
                           return (
                             <tr 
-                              class="hover:bg-gray-50 transition-all duration-200"
+                              class="hover:bg-[var(--color-bg-tertiary)] transition-all duration-200"
                               classList={{
-                                'opacity-50 bg-red-50': isDeleting(),
-                                'pointer-events-none': isDeleting()
+                                'opacity-50 bg-[var(--color-error-bg)] pointer-events-none': isDeleting()
                               }}
                             >
-                              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-primary)]">
                                 {patient.id}
                               </td>
-                              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {patient.name}
+                              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-primary)]">
+                                <Link 
+                                  to="/patients/$id" 
+                                  params={{ id: patient.id }}
+                                  class="font-medium text-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary-hover)] hover:underline transition-colors"
+                                >
+                                  {patient.name}
+                                </Link>
                               </td>
-                              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-secondary)]">
                                 {new Date(patient.created).toLocaleDateString()}
                               </td>
                               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button class="text-blue-600 hover:text-blue-900 mr-4 transition-colors">
-                                  Edit
-                                </button>
+                                <Link 
+                                  to="/patients/$id" 
+                                  params={{ id: patient.id }}
+                                  class="text-[var(--color-brand-primary)] hover:text-[var(--color-brand-primary-hover)] mr-4 transition-colors"
+                                >
+                                  View
+                                </Link>
                                 <button
-                                  class="text-red-600 hover:text-red-900 disabled:opacity-50 transition-colors"
+                                  class="text-[var(--color-error)] hover:text-[var(--color-error-hover)] disabled:opacity-50 transition-colors"
                                   onClick={() => handleDelete(patient.id, patient.name)}
                                   disabled={isDeleting()}
                                 >
@@ -129,7 +140,7 @@ function PatientsPage() {
                                     when={!isDeleting()} 
                                     fallback={
                                       <span class="inline-flex items-center">
-                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-[var(--color-error)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
@@ -151,9 +162,9 @@ function PatientsPage() {
               )}
             </Show>
           </Suspense>
-        </div>
-        </div>
-      </div>
+        </Card>
+        </PageContainer>
+      </PageLayout>
     </>
   )
 }
